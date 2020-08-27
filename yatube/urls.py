@@ -7,12 +7,12 @@ urlpatterns = [
     # регистрация и авторизация
     path('auth/', include('Users.urls')),
     path('auth/', include('django.contrib.auth.urls')),
-    # раздел администратора
-    path('admin/', admin.site.urls),
     # flatpages
     path('about/', include('django.contrib.flatpages.urls')),
     # импорт из приложения posts
     path('', include('posts.urls')),
+    # раздел администратора
+    path('admin/', admin.site.urls),
 ]
 
 #добавим новые пути
