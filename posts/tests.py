@@ -1,7 +1,13 @@
-from django.test import TestCase, Client
-from posts.models import Post, Group
+from django.test import Client, TestCase
+
+from .models import Post, Group
+
 
 class ProfileTest(TestCase):
+
+    url1 = reverse('post', kwargs=username)
+    url2 = reverse('post_edit', kwargs=username)
+
     def setUp(self):
         self.client = Client()
         self.user = User.objects.get(username="sarah",
@@ -9,56 +15,56 @@ class ProfileTest(TestCase):
                                      password="Password123$")
         self.client.force_login(self.user)
         print("Создали тестового пользователя")
-        self.group = Group.objects.create(title='Test group', slug='testgroup', description='Test Group')
+        self.group = Group.objects.create(title='Test group',
+                                          slug='testgroup',
+                                          description='Test Group')
         print("Создали тестовую группу")
         self.post = Post.objects.create(
-            text="You're talking about things I haven't done yet in the past tense. It's driving me crazy!",
+            text="Hello world",
             author=self.user
         )
-        print("Создали тестовый пост")
-
-    def test_profile(self):
-        response = self.client.post('/auth/singup/',
-                                    self.user, follow=true
-                                    )
-        self.assertRedirects(response, '/auth/login/', status_code=200)
-        print("После регистрации пользователя создается его персональная страница (profile)")
+        print("Создали тестового поста авторизованным пользователем")
+        self.assertRedirects(response,
+                             reverse('profile', kwargs=username),
+                             status_code=200
+        )
+        print("Создана персональная страница (profile)")
         self.assertEqual(response.status_code, 200)
         print("проверяем что страница найдена")
 
-    def new_post(self):
-        response = self.client.get('/?page=1/')
+    def testPublicPost(self):
+        response = self.client.get(self.url1)
         self.assertEqual(response.status_code=200)
         self.assertIn(self.post, response.context['page'].object_list)
-        response = self.client.get(f'/{self.user.username}/?page=1/')
+        response = self.client.get(self.url1)
         self.assertEqual(response.status_code = 200)
         self.assertIn(self.post, response.context['page'].object_list)
-        response = self.client.get(f'/{self.user.username}/{self.post.id}/')
+        response = self.client.get(self.url1)
         self.assertEqual(response.status_code = 200)
         self.assertIn(self.post, response.context['page']
-        print("Авторизованный пользователь может опубликовать пост")
-
         response = self.client.get("/")
-        print("После публикации поста новая запись появляется на главной странице сайта (index), на персональной странице пользователя (profile), и на отдельной странице поста (post)")
+        print("новая запись появляется на (index), (profile), (post)")
 
-    def post_edit(self):
-        response = self.client.get('/sarah/2000/edit/')
+    def testPostEdit(self):
+        response = self.client.get(self.url2)
         self.assertEqual(response.status_code, 200,
-                         msg='Проблемы на странице поста для редактирования.')
+                         msg='Проблемы на странице поста для редактирования.',
         data = {'text': 'terminator', 'id': 2000, 'group': group}
-        response = self.client.post('/sarah/2000/edit/', data)
+        )
+        response = self.client.post(self.url2, data)
         response = self.client.get('/')
-        self.assertContains(response, 'terminator222', msg_prefix='Проблема после редактирования: не сохранился результат редактирования текста')
-        response = self.client.get('/sarah/2000/edit/')
-        self.assertContains(response, 'termo', msg_prefix='Проблема после редактирования: не сохранился результат редактирования группы')
+        self.assertContains(response, 'terminator222',
+                            msg_prefix='Проблема после редактирования текста'
+        )
+        response = self.client.get(self.url2)
+        self.assertContains(response, 'termo',
+                            msg_prefix='Проблема после редактирования группы'
+        )
 
-class guest_test(TestCase):
-    def test_guest(self):
+    def testGuest(self):
         #Неавторизованный посетитель не может опубликовать пост (его редиректит на страницу входа
         self.client.force_login(self.user)
-        response = self.client.post(
-            '/new', {'text': 'Test post', 'group': self.group.id}, follow=True
-        )
+        response = self.client.post(reverse('post_new'), follow=True)
         self.assertRedirects(
             response,
             reverse('index'),
