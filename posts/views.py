@@ -45,6 +45,7 @@ def new_post(request):
         form = PostForm()
     return render(request, 'new.html', {'form': form})
 
+
 def profile(request, username):
     profile = get_object_or_404(get_user_model(), username=username)
     post_list = profile.posts.all()
@@ -62,8 +63,8 @@ def profile(request, username):
 
 
 def post_view(request, username, post_id):
-    post = get_object_or_404(Post, id=post_id)
     profile = get_object_or_404(get_user_model(), username=username)
+    post = get_object_or_404(Post, id=post_id)
     post_list = Post.objects.order_by('-pub_date').all()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
@@ -78,6 +79,7 @@ def post_view(request, username, post_id):
 
 
 def post_edit(request, username, post_id):
+    author = get_object_or_404(get_user_model(), username=username)
     post = get_object_or_404(Post, id=post_id)
     if request.user == post.author:
         edit = True
@@ -87,19 +89,10 @@ def post_edit(request, username, post_id):
                 form.save()
                 return redirect(post_view, username=post.author.username, post_id=post_id)
         form = PostForm(instance=post)
-        form['text'].help_text = 'Отредактируйте текст записи и нажмите "Сохранить"'
-        form['group'].help_text = 'Измените группу'
-        form['text'].label = 'Текст записи'
-        group = get_object_or_404(Group)
-        posts = group.posts.all()
         context = {
             'form': form,
             'edit': edit,
             'post': post,
         }
         return render(request, 'new.html', context)
-    return redirect(post_view, username=post.author.username, post_id=post_id)        
-    # тут тело функции. Не забудьте проверить,
-    # что текущий пользователь — это автор записи.
-    # В качестве шаблона страницы редактирования укажите шаблон создания новой записи
-    # который вы создали раньше (вы могли назвать шаблон иначе)
+    return redirect(post_view, username=post.author.username, post_id=post_id)
