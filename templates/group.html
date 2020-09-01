@@ -6,7 +6,7 @@
 
     {% for post in posts %}
     <h3>
-        Автор: {{ post.author.get_full_name }}, Дата публикации: {{ post.pub_date|date:"d M Y" }}, Группа: {{ post.group }}
+        Автор: {{ post.author.first_name }} {{ post.author.last_name }}, Дата публикации: {{ post.pub_date|date:"d M Y" }}, Группа: {{ post.group }}, {% include 'includes/thumbnail.html' %}
     </h3>
     <p>{{ post.text }}</p>
     {% if not forloop.last %}<hr>{% endif %}

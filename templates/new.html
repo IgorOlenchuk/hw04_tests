@@ -13,7 +13,7 @@
         <div class="card-header">Добавить запись</div>
       {% endif %}
       <div class="card-body">
-        <form method="post" action="{% url 'new_post' %}">
+        <form method="post" enctype="multipart/form-data">
           {% csrf_token %}
           <div class="form-group row">
               <label for="{{ form.group.id_for_label }}" class="col-md-4 col-form-label text-md-right">Группа</label>
